@@ -1,6 +1,6 @@
 # Walk
 
-## Sample ussage
+## Sample usage
 
 ```javascript
 var Resolver = require('y-resolver'),
