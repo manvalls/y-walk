@@ -1,13 +1,12 @@
 {
   "name": "y-walk",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Walk a yielded returning generator",
   "main": "main.js",
   "dependencies": {
     "y-resolver": "",
     "vz.rand": ""
   },
-  
   "repository": {
     "type": "git",
     "url": "git://github.com/manvalls/y-walk.git"
