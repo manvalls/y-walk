@@ -53,14 +53,20 @@ function squeeze(iterator,prevYd,resolver,s){
 }
 
 function walkIt(generator,args,thisArg,s){
-  var it = generator.apply(args,thisArg || this),
+  var it,
       result,
       resolver;
   
   prevStack = stack;
   stack = s;
   
-  result = it.next();
+  it = generator.apply(args,thisArg || this);
+  
+  if(it && it.next && it.throw) result = it.next();
+  else{
+    stack = prevStack;
+    return Resolver.accept(it);
+  }
   
   stack = prevStack;
   
@@ -91,8 +97,8 @@ walk.wrap = function(generator){
   };
 };
 
-walk.after = function(yd){
-  var resolver = new Resolver();
+walk.after = function(yd,resolver){
+  resolver = resolver || new Resolver();
   
   yd[after] = yd[after] || [];
   yd[after].push(resolver);
@@ -100,8 +106,8 @@ walk.after = function(yd){
   return resolver.yielded;
 };
 
-walk.before = function(yd){
-  var resolver = new Resolver();
+walk.before = function(yd,resolver){
+  resolver = resolver || new Resolver();
   
   yd[before] = yd[before] || [];
   yd[before].push(resolver);
