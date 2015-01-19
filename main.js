@@ -91,6 +91,10 @@ walk.trace = function(id,generator,args,thisArg){
   }
 };
 
+walk.getStack = function(){
+  return stack.slice();
+};
+
 walk.wrap = function(generator){
   return function(){
     return walk(generator,arguments,this);
