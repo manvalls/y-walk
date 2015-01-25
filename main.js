@@ -47,7 +47,7 @@ function squeeze(iterator,prevYd,resolver,s){
     if(prevYd[after]) while(res = prevYd[after].shift()) res.accept();
     
     if(result.done) return resolver.accept(result.value);
-    prevYd = result.value;
+    prevYd = result.value.yielded || result.value;
   }
   
 }
@@ -73,7 +73,7 @@ function walkIt(generator,args,thisArg,s){
   if(result.done) return Resolver.accept(result.value);
   
   resolver = new Resolver();
-  squeeze(it,result.value,resolver,s);
+  squeeze(it,result.value.yielded || result.value,resolver,s);
   
   return resolver.yielded;
 }
