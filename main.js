@@ -60,7 +60,7 @@ function walkIt(generator,args,thisArg,s){
   prevStack = stack;
   stack = s;
   
-  it = generator.apply(args,thisArg || this);
+  it = generator.apply(thisArg || this,args);
   
   if(it && it.next && it.throw) result = it.next();
   else{
