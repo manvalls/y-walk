@@ -1,5 +1,5 @@
 var Resolver = require('y-resolver'),
-    Su = require('vz.rand').Su,
+    Su = require('u-su'),
     
     after = Su(),
     before = Su(),
