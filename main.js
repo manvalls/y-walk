@@ -44,7 +44,7 @@ function squeeze(iterator,prevYd,resolver,s){
     
     stack = prevStack;
     
-    if(prevYd[after]) while(res = prevYd[after].shift()) res.accept();
+    if(prevYd[after] && !prevYd.listeners) while(res = prevYd[after].shift()) res.accept();
     
     if(result.done) return resolver.accept(result.value);
     prevYd = result.value.yielded || result.value;
