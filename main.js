@@ -4,11 +4,18 @@ var Resolver = require('y-resolver'),
     after = Su(),
     before = Su(),
     
+    toYielded = Su(),
+    
     stack = [],
     prevStack = stack,
     walk;
 
 // Main
+
+function getYielded(obj){
+  while(!(obj instanceof Resolver.Yielded)) obj = obj[toYielded]();
+  return obj;
+}
 
 walk = module.exports = function(generator,args,thisArg){
   try{ return walkIt(generator,args,thisArg,stack); }
@@ -47,7 +54,7 @@ function squeeze(iterator,prevYd,resolver,s){
     if(prevYd[after] && !prevYd.listeners) while(res = prevYd[after].shift()) res.accept();
     
     if(result.done) return resolver.accept(result.value);
-    prevYd = result.value.yielded || result.value;
+    prevYd = getYielded(result.value);
   }
   
 }
@@ -73,12 +80,14 @@ function walkIt(generator,args,thisArg,s){
   if(result.done) return Resolver.accept(result.value);
   
   resolver = new Resolver();
-  squeeze(it,result.value.yielded || result.value,resolver,s);
+  squeeze(it,getYielded(result.value),resolver,s);
   
   return resolver.yielded;
 }
 
 // Aux
+
+walk.toYielded = toYielded;
 
 walk.trace = function(id,generator,args,thisArg){
   var s = stack.slice();
@@ -119,3 +128,4 @@ walk.before = function(yd,resolver){
   return resolver.yielded;
 };
 
+require('./main/proto.js');
