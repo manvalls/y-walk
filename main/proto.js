@@ -23,15 +23,13 @@ if(global.Promise) Su.define(Promise.prototype,toYielded,function(){
 
 // Array (Promise.all equivalent)
 
-walkArray = walk.wrap(function*(array){
-  var result = [],element;
+Su.define(Array.prototype,toYielded,walk.wrap(function*(){
+  var result = [],
+      array = this.slice(),
+      element;
   
   while(element = array.shift()) result.push(yield element);
   
   return result;
-});
-
-Su.define(Array.prototype,toYielded,function(){
-  return this[yielded] = this[yielded] || walkArray(this);
-});
+}));
 
