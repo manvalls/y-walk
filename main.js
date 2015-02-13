@@ -13,7 +13,12 @@ var Resolver = require('y-resolver'),
 // Main
 
 function getYielded(obj){
-  while(!(obj instanceof Resolver.Yielded)) obj = obj[toYielded]();
+  
+  while(!(obj instanceof Resolver.Yielded)){
+    if(obj[toYielded]) obj = obj[toYielded]();
+    else return Resolver.accept(obj);
+  }
+  
   return obj;
 }
 
