@@ -15,7 +15,7 @@ var Resolver = require('y-resolver'),
 function getYielded(obj){
   
   while(!(obj instanceof Resolver.Yielded)){
-    if(obj[toYielded]) obj = obj[toYielded]();
+    if(obj != null && obj[toYielded]) obj = obj[toYielded]();
     else return Resolver.accept(obj);
   }
   
