@@ -30,9 +30,9 @@ walk = module.exports = function(generator,args,thisArg){
   }
 };
 
-function listener(iterator,prevYd,resolver){
+function listener(iterator,prevYd,resolver,s){
   
-  try{ squeeze(iterator,prevYd,resolver); }
+  try{ squeeze(iterator,prevYd,resolver,s,true); }
   catch(e){
     stack = prevStack;
     resolver.reject(e);
@@ -40,13 +40,28 @@ function listener(iterator,prevYd,resolver){
   
 }
 
-function squeeze(iterator,prevYd,resolver,s){
+function squeeze(iterator,prevYd,resolver,s,fl){
   var result,res;
   
   while(true){
-    if(!prevYd.done) return prevYd.listen(listener,[iterator,prevYd,resolver]);
     
-    if(prevYd[before]) while(res = prevYd[before].shift()) res.accept();
+    if(!prevYd.done){
+      prevYd.listen(listener,[iterator,prevYd,resolver,s]);
+      
+      if(prevYd[before]){
+        res = prevYd[before];
+        delete prevYd[before];
+        res.accept();
+      }
+      
+      return;
+    }else if(!fl && prevYd[before]){
+      res = prevYd[before];
+      delete prevYd[before];
+      res.accept();
+    }
+    
+    fl = false;
     
     prevStack = stack;
     stack = s;
@@ -56,7 +71,11 @@ function squeeze(iterator,prevYd,resolver,s){
     
     stack = prevStack;
     
-    if(prevYd[after] && !prevYd.listeners) while(res = prevYd[after].shift()) res.accept();
+    if(prevYd[after] && !prevYd.listeners){
+      res = prevYd[after];
+      delete prevYd[after];
+      res.accept();
+    }
     
     if(result.done) return resolver.accept(result.value);
     prevYd = getYielded(result.value);
@@ -65,9 +84,7 @@ function squeeze(iterator,prevYd,resolver,s){
 }
 
 function walkIt(generator,args,thisArg,s){
-  var it,
-      result,
-      resolver;
+  var it,result,resolver,prevYd,res;
   
   prevStack = stack;
   stack = s;
@@ -85,7 +102,9 @@ function walkIt(generator,args,thisArg,s){
   if(result.done) return Resolver.accept(result.value);
   
   resolver = new Resolver();
-  squeeze(it,getYielded(result.value),resolver,s);
+  prevYd = getYielded(result.value);
+  
+  squeeze(it,prevYd,resolver,s);
   
   return resolver.yielded;
 }
@@ -115,22 +134,14 @@ walk.wrap = function(generator){
   };
 };
 
-walk.after = function(yd,resolver){
-  resolver = resolver || new Resolver();
-  
-  yd[after] = yd[after] || [];
-  yd[after].push(resolver);
-  
-  return resolver.yielded;
+walk.after = function(yd){
+  yd[after] = yd[after] || new Resolver();
+  return yd[after].yielded;
 };
 
-walk.before = function(yd,resolver){
-  resolver = resolver || new Resolver();
-  
-  yd[before] = yd[before] || [];
-  yd[before].push(resolver);
-  
-  return resolver.yielded;
+walk.before = function(yd){
+  yd[before] = yd[before] || new Resolver();
+  return yd[before].yielded;
 };
 
 require('./main/proto.js');
