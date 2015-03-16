@@ -14,7 +14,7 @@ var Resolver = require('y-resolver'),
 
 function getYielded(obj){
   
-  while(!(obj instanceof Resolver.Yielded)){
+  while(!(obj && obj.canBeWalked)){
     if(obj != null && obj[toYielded]) obj = obj[toYielded]();
     else return Resolver.accept(obj);
   }
