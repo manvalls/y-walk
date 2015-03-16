@@ -1,9 +1,6 @@
 var Resolver = require('y-resolver'),
     Su = require('u-su'),
     
-    after = Su(),
-    before = Su(),
-    
     toYielded = Su(),
     
     stack = [],
@@ -47,20 +44,11 @@ function squeeze(iterator,prevYd,resolver,s,fl){
     
     if(!prevYd.done){
       prevYd.listen(listener,[iterator,prevYd,resolver,s]);
-      
-      if(prevYd[before]){
-        res = prevYd[before];
-        delete prevYd[before];
-        res.accept();
-      }
-      
+      prevYd.start();
       return;
-    }else if(!fl && prevYd[before]){
-      res = prevYd[before];
-      delete prevYd[before];
-      res.accept();
     }
     
+    if(!fl) prevYd.start();
     fl = false;
     
     prevStack = stack;
@@ -71,11 +59,7 @@ function squeeze(iterator,prevYd,resolver,s,fl){
     
     stack = prevStack;
     
-    if(prevYd[after] && !prevYd.listeners){
-      res = prevYd[after];
-      delete prevYd[after];
-      res.accept();
-    }
+    if(!prevYd.listeners) prevYd.end();
     
     if(result.done) return resolver.accept(result.value);
     prevYd = getYielded(result.value);
@@ -132,16 +116,6 @@ walk.wrap = function(generator){
   return function(){
     return walk(generator,arguments,this);
   };
-};
-
-walk.after = function(yd){
-  yd[after] = yd[after] || new Resolver();
-  return yd[after].yielded;
-};
-
-walk.before = function(yd){
-  yd[before] = yd[before] || new Resolver();
-  return yd[before].yielded;
 };
 
 require('./main/proto.js');
