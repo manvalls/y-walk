@@ -1,8 +1,6 @@
 var Resolver = require('y-resolver'),
     Su = require('u-su'),
     
-    toYielded = Su(),
-    
     stack = [],
     prevStack = stack,
     walk;
@@ -12,7 +10,7 @@ var Resolver = require('y-resolver'),
 function getYielded(obj){
   
   while(!(obj && obj.canBeWalked)){
-    if(obj != null && obj[toYielded]) obj = obj[toYielded]();
+    if(obj != null && obj.yToWalkable) obj = obj.yToWalkable();
     else return Resolver.accept(obj);
   }
   
@@ -94,8 +92,6 @@ function walkIt(generator,args,thisArg,s){
 }
 
 // Aux
-
-walk.toYielded = toYielded;
 
 walk.trace = function(id,generator,args,thisArg){
   var s = stack.slice();
