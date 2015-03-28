@@ -49,11 +49,11 @@ if(!Object.prototype.yToWalkable){
   });
   
   Object.defineProperty(Object.prototype,'yToWalkable',{writable: true,value: function(){
-    var ready,
-        keys = Object.keys(this),
-        ctx,
-        i;
+    var ready,keys,ctx,i;
     
+    if(typeof this.toPromise == 'function') return this.toPromise();
+    
+    keys = Object.keys(this);
     if(!keys.length) return Resolver.accept(this);
     
     ready = new Resolver();
