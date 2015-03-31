@@ -2,7 +2,6 @@ var Resolver = require('y-resolver'),
     Su = require('u-su'),
     
     stack = [],
-    prevStack = stack,
     walk;
 
 // Main
@@ -18,73 +17,67 @@ function getYielded(obj){
 }
 
 walk = module.exports = function(generator,args,thisArg){
-  try{ return walkIt(generator,args,thisArg,stack); }
-  catch(e){
-    stack = prevStack;
-    return Resolver.reject(e);
-  }
+  return walkIt(generator,args,thisArg,stack);
 };
 
-function listener(iterator,prevYd,resolver,s){
-  
-  try{ squeeze(iterator,prevYd,resolver,s,true); }
-  catch(e){
-    stack = prevStack;
-    resolver.reject(e);
-  }
-  
-}
-
-function squeeze(iterator,prevYd,resolver,s,fl){
-  var result,res;
+function squeeze(iterator,prevYd,resolver,s){
+  var result,res,error,prevStack;
   
   while(true){
     
     if(!prevYd.done){
-      prevYd.listen(listener,[iterator,prevYd,resolver,s]);
-      prevYd.start();
+      prevYd.listen(squeeze,[iterator,prevYd,resolver,s]);
       return;
     }
-    
-    if(!fl) prevYd.start();
-    fl = false;
     
     prevStack = stack;
     stack = s;
     
-    if(prevYd.accepted) result = iterator.next(prevYd.value);
-    else result = iterator.throw(prevYd.error);
+    try{
+      if(prevYd.accepted) result = iterator.next(prevYd.value);
+      else result = iterator.throw(prevYd.error);
+    }catch(e){ error = e; }
     
     stack = prevStack;
+    prevYd.end();
     
-    if(!prevYd.listeners) prevYd.end();
-    
+    if(error) return resolver.reject(error);
     if(result.done) return resolver.accept(result.value);
+    
     prevYd = getYielded(result.value);
+    prevYd.start();
   }
   
 }
 
 function walkIt(generator,args,thisArg,s){
-  var it,result,resolver,prevYd,res;
+  var it,result,resolver,prevYd,res,error,prevStack;
   
   prevStack = stack;
   stack = s;
   
-  it = generator.apply(thisArg || this,args);
+  try{ it = generator.apply(thisArg || this,args); }
+  catch(e){
+    stack = prevStack;
+    return Resolver.reject(e);
+  }
   
-  if(it && it.next && it.throw) result = it.next();
-  else{
+  if(!(it && it.next && it.throw)){
     stack = prevStack;
     return Resolver.accept(it);
   }
   
+  try{ result = it.next(); }
+  catch(e){ error = e; }
+  
   stack = prevStack;
   
+  if(error) return Resolver.reject(error);
   if(result.done) return Resolver.accept(result.value);
   
   resolver = new Resolver();
   prevYd = getYielded(result.value);
+  prevYd.start();
   
   squeeze(it,prevYd,resolver,s);
   
@@ -97,11 +90,7 @@ walk.trace = function(id,generator,args,thisArg){
   var s = stack.slice();
   s.push(id);
   
-  try{ return walkIt(generator,args,thisArg,s); }
-  catch(e){
-    stack = prevStack;
-    return Resolver.reject(e);
-  }
+  return walkIt(generator,args,thisArg,s);
 };
 
 walk.getStack = function(){
