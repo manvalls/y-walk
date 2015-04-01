@@ -4,12 +4,14 @@ var Resolver = require('y-resolver'),
     
     yielded = Su(),
     
+    toYd = Resolver.toYielded,
+    
     race,fromPromise;
 
 // Promise
 
-if(global.Promise && !Promise.prototype.yToWalkable)
-Object.defineProperty(Promise.prototype,'yToWalkable',{writable: true,value: fromPromise = function(){
+if(global.Promise && !Promise.prototype[toYd])
+Object.defineProperty(Promise.prototype,toYd,{writable: true,value: fromPromise = function(){
   var resolver;
   
   if(this[yielded]) return this[yielded];
@@ -22,8 +24,8 @@ Object.defineProperty(Promise.prototype,'yToWalkable',{writable: true,value: fro
 
 // Array (Promise.all equivalent)
 
-if(!Array.prototype.yToWalkable)
-Object.defineProperty(Array.prototype,'yToWalkable',{writable: true,value: walk.wrap(function*(){
+if(!Array.prototype[toYd])
+Object.defineProperty(Array.prototype,toYd,{writable: true,value: walk.wrap(function*(){
   var result = [],
       array = this.slice(),
       element;
@@ -35,7 +37,7 @@ Object.defineProperty(Array.prototype,'yToWalkable',{writable: true,value: walk.
 
 // Object (Promise.race equivalent)
 
-if(!Object.prototype.yToWalkable){
+if(!Object.prototype[toYd]){
   
   race = walk.wrap(function*(ctx,key,yd){
     yield ctx.ready;
@@ -47,7 +49,7 @@ if(!Object.prototype.yToWalkable){
     
   });
   
-  Object.defineProperty(Object.prototype,'yToWalkable',{writable: true,value: function(){
+  Object.defineProperty(Object.prototype,toYd,{writable: true,value: function(){
     var ready,keys,ctx,i;
     
     if(typeof this.toPromise == 'function') return this.toPromise();

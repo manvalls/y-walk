@@ -2,14 +2,17 @@ var Resolver = require('y-resolver'),
     Su = require('u-su'),
     
     stack = [],
+    toYd = Resolver.toYielded,
+    isYd = Resolver.isYielded,
+    
     walk;
 
 // Main
 
 function getYielded(obj){
   
-  while(!(obj && obj.canBeWalked)){
-    if(obj != null && obj.yToWalkable) obj = obj.yToWalkable();
+  while(!(obj && obj[isYd])){
+    if(obj != null && obj[toYd]) obj = obj[toYd]();
     else return Resolver.accept(obj);
   }
   
