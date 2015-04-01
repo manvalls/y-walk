@@ -4,18 +4,17 @@ var Resolver = require('y-resolver'),
     
     yielded = Su(),
     
-    race;
+    race,fromPromise;
 
 // Promise
 
 if(global.Promise && !Promise.prototype.yToWalkable)
-Object.defineProperty(Promise.prototype,'yToWalkable',{writable: true,value: function(){
+Object.defineProperty(Promise.prototype,'yToWalkable',{writable: true,value: fromPromise = function(){
   var resolver;
   
   if(this[yielded]) return this[yielded];
   
   resolver = new Resolver();
-  
   this.then(function(v){ resolver.accept(v); },function(e){ resolver.reject(e); });
   
   return this[yielded] = resolver.yielded;
@@ -52,6 +51,7 @@ if(!Object.prototype.yToWalkable){
     var ready,keys,ctx,i;
     
     if(typeof this.toPromise == 'function') return this.toPromise();
+    if(typeof this.then == 'function') return fromPromise.call(this);
     
     keys = Object.keys(this);
     if(!keys.length) return Resolver.accept(this);
