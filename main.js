@@ -39,13 +39,11 @@ function squeeze(iterator,prevYd,resolver,s){
     }catch(e){ error = e; }
     
     stack = prevStack;
-    prevYd.end();
     
     if(error) return resolver.reject(error);
     if(result.done) return resolver.accept(result.value);
     
     prevYd = getYielded(result.value);
-    prevYd.start();
   }
   
 }
@@ -77,7 +75,6 @@ function walkIt(generator,args,thisArg,s){
   
   resolver = new Resolver();
   prevYd = getYielded(result.value);
-  prevYd.start();
   
   squeeze(it,prevYd,resolver,s);
   
