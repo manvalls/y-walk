@@ -40,10 +40,15 @@ Object.defineProperty(Array.prototype,toYd,{writable: true,value: walk.wrap(func
 if(!Object.prototype[toYd]){
   
   race = walk.wrap(function*(ctx,key,yd){
+    var obj;
+    
     yield ctx.ready;
     
-    try{ ctx.resolver.accept([key,yield yd]); }
-    catch(e){
+    try{
+      obj = {};
+      obj[key] = yield yd;
+      ctx.resolver.accept(obj);
+    }catch(e){
       if(!--ctx.toFail) ctx.resolver.reject(e);
     }
     
