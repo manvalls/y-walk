@@ -12,7 +12,7 @@ var Resolver = require('y-resolver'),
 function getYielded(obj){
   
   while(!(obj && obj[isYd])){
-    if(obj != null && obj[toYd]) obj = obj[toYd]();
+    if(obj instanceof Object && obj[toYd]) obj = obj[toYd]();
     else return Resolver.accept(obj);
   }
   

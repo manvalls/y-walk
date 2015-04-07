@@ -6,7 +6,7 @@ var Resolver = require('y-resolver'),
     
     toYd = Resolver.toYielded,
     
-    race,fromPromise;
+    race,fromPromise,run;
 
 // Promise
 
@@ -24,38 +24,74 @@ Object.defineProperty(Promise.prototype,toYd,{writable: true,value: fromPromise 
 
 // Array (Promise.all equivalent)
 
-if(!Array.prototype[toYd])
-Object.defineProperty(Array.prototype,toYd,{writable: true,value: walk.wrap(function*(){
-  var result = [],
-      array = this.slice(),
-      element;
+if(!Array.prototype[toYd]){
   
-  while(element = array.shift()) result.push(yield element);
+  run = walk.wrap(function*(ctx,i,yd){
+    var error;
+    
+    try{
+      ctx.arr[i] = yield yd;
+      if(!--ctx.length) ctx.resolver.accept(ctx.arr);
+    }catch(e){
+      ctx.errors[i] = e;
+      if(!--ctx.length){
+        error = new Error(e.message);
+        error.stack = e.stack;
+        
+        error.errors = ctx.errors;
+        error.values = ctx.arr;
+        
+        ctx.resolver.reject(error);
+      }
+    }
+    
+  });
   
-  return result;
-})});
+  Object.defineProperty(Array.prototype,toYd,{writable: true,value: function(){
+    var arr = [],
+        res,i,ctx;
+    
+    if(!this.length) return Resolver.accept(arr);
+    
+    ctx = {
+      length: this.length,
+      resolver: new Resolver(),
+      arr: [],
+      errors: []
+    };
+    
+    for(i = 0;i < this.length;i++) run(ctx,i,this[i]);
+    
+    return ctx.resolver.yielded;
+  }});
+  
+}
 
 // Object (Promise.race equivalent)
 
 if(!Object.prototype[toYd]){
   
   race = walk.wrap(function*(ctx,key,yd){
-    var obj;
-    
-    yield ctx.ready;
+    var error;
     
     try{
-      obj = {};
-      obj[key] = yield yd;
-      ctx.resolver.accept(obj);
+      ctx.obj[key] = yield yd;
+      ctx.resolver.accept(ctx.obj);
     }catch(e){
-      if(!--ctx.toFail) ctx.resolver.reject(e);
+      ctx.errors[key] = e;
+      if(!--ctx.toFail){
+        error = new Error(e.message);
+        error.stack = e.stack;
+        
+        error.errors = ctx.errors;
+        ctx.resolver.reject(error);
+      }
     }
     
   });
   
   Object.defineProperty(Object.prototype,toYd,{writable: true,value: function(){
-    var ready,keys,ctx,i;
+    var keys,ctx,i;
     
     if(typeof this.toPromise == 'function') return this.toPromise();
     if(typeof this.then == 'function') return fromPromise.call(this);
@@ -63,16 +99,14 @@ if(!Object.prototype[toYd]){
     keys = Object.keys(this);
     if(!keys.length) return Resolver.accept(this);
     
-    ready = new Resolver();
-    
     ctx = {
-      ready: ready.yielded,
       resolver: new Resolver(),
-      toFail: keys.length
+      toFail: keys.length,
+      errors: {},
+      obj: {}
     };
     
     for(i = 0;i < keys.length;i++) race(ctx,keys[i],this[keys[i]]);
-    ready.accept();
     
     return ctx.resolver.yielded;
   }});
