@@ -30,13 +30,16 @@ if(!Array.prototype[toYd]){
     var error;
     
     try{ ctx.arr[i] = yield yd; }
-    catch(e){ ctx.errors[i] = e; }
+    catch(e){
+      ctx.errors[i] = e;
+      ctx.lastError = e;
+    }
     
     if(!--ctx.length){
       
-      if(ctx.errors.length){
-        error = new Error(ctx.errors[0].message);
-        error.stack = ctx.errors[0].stack;
+      if(ctx.lastError){
+        error = new Error(ctx.lastError.message);
+        error.stack = ctx.lastError.stack;
         
         error.errors = ctx.errors;
         error.values = ctx.arr;
