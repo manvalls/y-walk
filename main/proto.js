@@ -29,12 +29,12 @@ if(!Array.prototype[toYd]){
   run = walk.wrap(function*(ctx,i,yd){
     var error;
     
-    try{
-      ctx.arr[i] = yield yd;
-      if(!--ctx.length) ctx.resolver.accept(ctx.arr);
-    }catch(e){
-      ctx.errors[i] = e;
-      if(!--ctx.length){
+    try{ ctx.arr[i] = yield yd; }
+    catch(e){ ctx.errors[i] = e; }
+    
+    if(!--ctx.length){
+      
+      if(ctx.errors.length){
         error = new Error(e.message);
         error.stack = e.stack;
         
@@ -42,7 +42,8 @@ if(!Array.prototype[toYd]){
         error.values = ctx.arr;
         
         ctx.resolver.reject(error);
-      }
+      }else ctx.resolver.accept(ctx.arr);
+      
     }
     
   });
