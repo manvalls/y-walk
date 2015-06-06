@@ -35,8 +35,8 @@ if(!Array.prototype[toYd]){
     if(!--ctx.length){
       
       if(ctx.errors.length){
-        error = new Error(e.message);
-        error.stack = e.stack;
+        error = new Error(ctx.errors[0].message);
+        error.stack = ctx.errors[0].stack;
         
         error.errors = ctx.errors;
         error.values = ctx.arr;
