@@ -1,6 +1,6 @@
 {
   "name": "y-walk",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Walk a yielded returning generator",
   "main": "main.js",
   "dependencies": {
@@ -15,5 +15,6 @@
     "url": "https://github.com/manvalls/y-walk/issues"
   },
   "author": "Manuel Valls Fernández <manolo@chatiku.com>",
-  "license": "LGPL-3.0"
+  "license": "LGPL-3.0",
+  "scripts": {}
 }
