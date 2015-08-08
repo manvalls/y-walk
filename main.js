@@ -15,6 +15,7 @@ var stack = [],
 module.exports = walk;
 walk.wrap = wrap;
 walk.getStack = getStack;
+walk.getCurrent = getCurrent;
 walk.trace = trace;
 
 /*/ imports /*/
@@ -43,6 +44,7 @@ function Walker(g,args,that,st){
 
   ps = stack;
   stack = st;
+  current = this;
 
   try{
     it = g.apply(that,args);
@@ -51,6 +53,7 @@ function Walker(g,args,that,st){
     return;
   }finally{
     stack = ps;
+    current = null;
   }
 
   this[iterator] = it;
@@ -61,7 +64,7 @@ function Walker(g,args,that,st){
     return;
   }
 
-  squeeze(step(it,st,res),it,st,res,this);
+  squeeze(step(it,this,st,res),it,st,res,this);
 }
 
 Walker.prototype = Object.create(Yielded.prototype);
@@ -131,17 +134,18 @@ function squeeze(yd,it,st,res,w){
     w[lastYd] = null;
     w[lastDt] = null;
 
-    yd = step(it,st,res,yd.value,yd.error,yd.rejected);
+    yd = step(it,w,st,res,yd.value,yd.error,yd.rejected);
 
   }
 
 }
 
-function step(it,st,res,value,error,failed){
+function step(it,w,st,res,value,error,failed){
   var next,ps;
 
   ps = stack;
   stack = st;
+  current = w;
 
   try{
     if(failed) next = it.throw(error);
@@ -151,6 +155,7 @@ function step(it,st,res,value,error,failed){
     return;
   }finally{
     stack = ps;
+    current = null;
   }
 
   if(next.done){
@@ -163,6 +168,10 @@ function step(it,st,res,value,error,failed){
 
 function getStack(){
   return stack.slice();
+}
+
+function getCurrent(){
+  return current;
 }
 
 function wrap(g){
