@@ -22,10 +22,19 @@ walk.trace = trace;
 
 define = require('u-proto/define');
 Resolver = require('y-resolver');
+
 toYd = Resolver.toYielded;
 isYd = Resolver.isYielded;
 Yielded = Resolver.Yielded;
-require('./main/proto.js');
+
+if(global.process){
+    require('./proto/stream/' + 'Readable.js');
+    require('./proto/stream/' + 'Writable.js');
+}
+
+require('./proto/Promise.js');
+require('./proto/Array.js');
+require('./proto/Object.js');
 
 /*/ ******* /*/
 
