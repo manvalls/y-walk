@@ -5,7 +5,7 @@ var Resolver = require('y-resolver'),
 
     run;
 
-if(!Array.prototype[toYd]){
+if(!Array.prototype.hasOwnProperty(toYd)){
 
   run = walk.wrap(function*(ctx,i,yd){
     var error;

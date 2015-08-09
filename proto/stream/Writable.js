@@ -5,7 +5,7 @@ var Resolver = require('y-resolver'),
 
     toYd = Resolver.toYielded;
 
-if(!Writable.prototype[toYd]){
+if(!Writable.prototype.hasOwnProperty(toYd)){
 
   Object.defineProperty(Writable.prototype,toYd,{writable: true,value: module.exports = function(){
 

@@ -8,7 +8,7 @@ var Resolver = require('y-resolver'),
 
     toYd = Resolver.toYielded;
 
-if(!Readable.prototype[toYd]){
+if(!Readable.prototype.hasOwnProperty(toYd)){
 
   Object.defineProperty(Readable.prototype,toYd,{writable: true,value: module.exports = function(){
 
@@ -42,7 +42,6 @@ if(!Readable.prototype[toYd]){
   }
 
   function onceEnd(){
-    console.log('END',this);
     this.removeListener('error',onceError);
     this.removeListener('data',onData);
     this[resolver].accept(this[str] == null ? Buffer.concat(this[parts]) : this[str]);

@@ -6,7 +6,7 @@ var Resolver = require('y-resolver'),
 
     race;
 
-if(!Object.prototype[toYd]){
+if(!Object.prototype.hasOwnProperty(toYd)){
 
   race = walk.wrap(function*(ctx,key,yd){
     var error;
