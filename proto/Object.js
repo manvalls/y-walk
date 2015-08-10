@@ -1,5 +1,9 @@
 var Resolver = require('y-resolver'),
+
     fromPromise = require('./Promise.js'),
+    fromReadableStream = require('./stream/Readable.js'),
+    fromWritableStream = require('./stream/Writable.js'),
+
     walk = require('../main.js'),
 
     toYd = Resolver.toYielded,
@@ -32,9 +36,13 @@ if(!Object.prototype.hasOwnProperty(toYd)){
 
     if(typeof this.toPromise == 'function') return this.toPromise();
     if(typeof this.then == 'function') return fromPromise.call(this);
+    if(typeof this.pipe == 'function') return fromReadableStream.call(this);
+    if(typeof this.end == 'function') return fromWritableStream.call(this);
+
+    if(this.constructor != Object) return Resolver.accept(this);
 
     keys = Object.keys(this);
-    if(!keys.length) return Resolver.accept(this);
+    if(!keys.length) return Resolver.accept({});
 
     ctx = {
       resolver: new Resolver(),
