@@ -77,8 +77,9 @@ function Walker(g,args,that,st){
 }
 
 Walker.prototype = Object.create(Yielded.prototype);
-Walker.prototype[define]('constructor',Walker);
 Walker.prototype[define]({
+
+  constructor: Walker,
 
   pause: function(){
     if(this[paused]) return;
