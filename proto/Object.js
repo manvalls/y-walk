@@ -1,14 +1,17 @@
 var Resolver = require('y-resolver'),
 
     fromPromise = require('./Promise.js'),
-    fromReadableStream = require('./stream/Readable.js'),
-    fromWritableStream = require('./stream/Writable.js'),
 
     walk = require('../main.js'),
 
     toYd = Resolver.toYielded,
 
-    race;
+    fromReadableStream,fromWritableStream,race;
+
+if(global.process){
+  fromReadableStream = require('./stream/' + 'Readable.js');
+  fromWritableStream = require('./stream/' + 'Writable.js');
+}
 
 if(!Object.prototype.hasOwnProperty(toYd)){
 
@@ -36,8 +39,11 @@ if(!Object.prototype.hasOwnProperty(toYd)){
 
     if(typeof this.toPromise == 'function') return this.toPromise();
     if(typeof this.then == 'function') return fromPromise.call(this);
-    if(typeof this.pipe == 'function') return fromReadableStream.call(this);
-    if(typeof this.end == 'function') return fromWritableStream.call(this);
+
+    if(global.process){
+      if(typeof this.pipe == 'function') return fromReadableStream.call(this);
+      if(typeof this.end == 'function') return fromWritableStream.call(this);
+    }
 
     if(this.constructor != Object) return Resolver.accept(this);
 
