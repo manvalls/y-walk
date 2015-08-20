@@ -8,7 +8,7 @@ var stack = [],
     lastDt = Symbol(),
     iStack = Symbol(),
 
-    Resolver,Yielded,toYd,isYd,define;
+    Resolver,Yielded,toYd,isYd,defer,define;
 
 /*/ exports /*/
 
@@ -25,6 +25,8 @@ Resolver = require('y-resolver');
 
 toYd = Resolver.toYielded;
 isYd = Resolver.isYielded;
+defer = Resolver.defer;
+
 Yielded = Resolver.Yielded;
 
 if(global.process){
@@ -122,7 +124,10 @@ function trace(id,g,args,that){
 function getYielded(obj){
 
   while(!(obj && obj[isYd])){
-    if(obj && obj[toYd]) obj = obj[toYd]();
+    if(!obj) return Resolver.accept(obj);
+
+    if(obj[defer]) obj = obj[defer]();
+    else if(obj[toYd]) obj = obj[toYd]();
     else return Resolver.accept(obj);
   }
 
