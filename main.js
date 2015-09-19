@@ -8,7 +8,7 @@ var stack = [],
     lastDt = Symbol(),
     iStack = Symbol(),
 
-    Resolver,Yielded,toYd,isYd,defer,define;
+    Resolver,Yielded,define;
 
 /*/ exports /*/
 
@@ -22,21 +22,7 @@ walk.trace = trace;
 
 define = require('u-proto/define');
 Resolver = require('y-resolver');
-
-toYd = Resolver.toYielded;
-isYd = Resolver.isYielded;
-defer = Resolver.defer;
-
 Yielded = Resolver.Yielded;
-
-if(global.process){
-    require('./proto/stream/' + 'Readable.js');
-    require('./proto/stream/' + 'Writable.js');
-}
-
-require('./proto/Promise.js');
-require('./proto/Array.js');
-require('./proto/Object.js');
 
 /*/ ******* /*/
 
@@ -121,19 +107,6 @@ function trace(id,g,args,that){
   return new Walker(g,args,that,s);
 }
 
-function getYielded(obj){
-
-  while(!(obj && obj[isYd])){
-    if(!obj) return Resolver.accept(obj);
-
-    if(obj[defer]) obj = obj[defer]();
-    else if(obj[toYd]) obj = obj[toYd]();
-    else return Resolver.accept(obj);
-  }
-
-  return obj;
-}
-
 function squeeze(yd,it,st,res,w){
 
   while(yd){
@@ -178,7 +151,7 @@ function step(it,w,st,res,value,error,failed){
     return;
   }
 
-  return getYielded(next.value);
+  return Yielded.get(next.value);
 }
 
 function getStack(){
