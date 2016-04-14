@@ -1,6 +1,6 @@
 {
   "name": "y-walk",
-  "version": "10.0.4",
+  "version": "10.0.5",
   "description": "Walk a yielded returning generator",
   "main": "main.js",
   "dependencies": {
