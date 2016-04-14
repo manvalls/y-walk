@@ -4,7 +4,6 @@
   "description": "Walk a yielded returning generator",
   "main": "main.js",
   "dependencies": {
-    "u-proto": "^6.4.2",
     "y-resolver": "^9.2.1"
   },
   "repository": {

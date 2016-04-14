@@ -1,3 +1,4 @@
+/**/ 'use strict' /**/
 var stack = [],
     current = null,
 
@@ -8,7 +9,7 @@ var stack = [],
     lastDt = Symbol(),
     iStack = Symbol(),
 
-    Resolver,Yielded,define;
+    Resolver,Yielded;
 
 /*/ exports /*/
 
@@ -20,7 +21,6 @@ walk.trace = trace;
 
 /*/ imports /*/
 
-define = require('u-proto/define');
 Resolver = require('y-resolver');
 Yielded = Resolver.Yielded;
 
@@ -28,58 +28,55 @@ Yielded = Resolver.Yielded;
 
 // Walker
 
-function Walker(g,args,that,st){
-  var res,ps,it;
+class Walker extends Yielded{
 
-  Yielded.call(this,resolver);
-  this[paused] = false;
+  constructor(g,args,that,st){
+    var res,ps,it;
 
-  res = this[resolver];
-  that = that || this;
-  args = args || [];
-  st = st || stack;
+    super(resolver);
+    this[paused] = false;
 
-  ps = stack;
-  stack = st;
-  current = this;
+    res = this[resolver];
+    that = that || this;
+    args = args || [];
+    st = st || stack;
 
-  try{
-    it = g.apply(that,args);
-  }catch(e){
-    res.reject(e);
-    return;
-  }finally{
-    stack = ps;
-    current = null;
+    ps = stack;
+    stack = st;
+    current = this;
+
+    try{
+      it = g.apply(that,args);
+    }catch(e){
+      res.reject(e);
+      return;
+    }finally{
+      stack = ps;
+      current = null;
+    }
+
+    this[iterator] = it;
+    this[iStack] = st;
+
+    if(!(it && it.next && it.throw)){
+      res.accept(it);
+      return;
+    }
+
+    squeeze(step(it,this,st,res),it,st,res,this);
   }
 
-  this[iterator] = it;
-  this[iStack] = st;
-
-  if(!(it && it.next && it.throw)){
-    res.accept(it);
-    return;
-  }
-
-  squeeze(step(it,this,st,res),it,st,res,this);
-}
-
-Walker.prototype = Object.create(Yielded.prototype);
-Walker.prototype[define]({
-
-  constructor: Walker,
-
-  pause: function(){
+  pause(){
     if(this[paused]) return;
-
     this[paused] = true;
     if(this[lastDt]) this[lastDt].detach();
-  },
+  }
 
-  resume: function(){
+  resume(){
+
     if(!this[paused]) return;
-
     this[paused] = false;
+
     if(this[lastYd]) this[lastYd].listen(squeeze,[
       this[lastYd],
       this[iterator],
@@ -90,7 +87,7 @@ Walker.prototype[define]({
 
   }
 
-});
+}
 
 // walk
 
@@ -103,7 +100,6 @@ function walk(g,args,that){
 function trace(id,g,args,that){
   var s = stack.slice();
   s.push(id);
-
   return new Walker(g,args,that,s);
 }
 
