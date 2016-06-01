@@ -73,18 +73,9 @@ class Walker extends Yielded{
   }
 
   resume(){
-
     if(!this[paused]) return;
     this[paused] = false;
-
-    if(this[lastYd]) this[lastYd].listen(squeeze,[
-      this[lastYd],
-      this[iterator],
-      this[iStack],
-      this[resolver],
-      this
-    ]);
-
+    squeeze(this[lastYd],this[iterator],this[iStack],this[resolver],this);
   }
 
 }
