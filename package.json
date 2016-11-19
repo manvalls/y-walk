@@ -14,6 +14,6 @@
     "url": "https://github.com/manvalls/y-walk/issues"
   },
   "author": "Manuel Valls Fernández <manolo@chatiku.com>",
-  "license": "LGPL-3.0",
+  "license": "Apache-2.0",
   "scripts": {}
 }
