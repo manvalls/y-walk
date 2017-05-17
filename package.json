@@ -4,7 +4,7 @@
   "description": "Walk a yielded returning generator",
   "main": "main.js",
   "dependencies": {
-    "y-resolver": "^10.0.1"
+    "y-resolver": "^10.1.3"
   },
   "repository": {
     "type": "git",
