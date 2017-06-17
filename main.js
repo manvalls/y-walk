@@ -15,9 +15,11 @@ var stack = [],
 
 module.exports = walk;
 walk.wrap = wrap;
+walk.onDemand = onDemand;
 walk.getStack = getStack;
 walk.getCurrent = getCurrent;
 walk.trace = trace;
+walk.trace.onDemand = traceOnDemand;
 
 /*/ imports /*/
 
@@ -30,11 +32,12 @@ Yielded = Resolver.Yielded;
 
 class Walker extends Yielded{
 
-  constructor(g,args,that,st){
+  constructor(g,args,that,st,startPaused){
     var res,ps,it;
 
     super(resolver);
-    this[paused] = false;
+    if(startPaused) this[paused] = true;
+    else this[paused] = false;
 
     res = this[resolver];
     that = that || this;
@@ -92,6 +95,27 @@ function trace(id,g,args,that){
   var s = stack.slice();
   s.push(id);
   return new Walker(g,args,that,s);
+}
+
+function onDemand(g,args,that){
+  var w = new Walker(g,args,that,undefined,true);
+  w.listeners.watch(demandWatcher,w);
+  return w;
+}
+
+function traceOnDemand(id,g,args,that){
+  var s = stack.slice(),
+      w;
+
+  s.push(id);
+  w = new Walker(g,args,that,s,true);
+  w.listeners.watch(demandWatcher,w);
+  return w;
+}
+
+function demandWatcher(v,ov,d,w){
+  if(v > 0) w.resume();
+  else w.pause();
 }
 
 function squeeze(yd,it,st,res,w){
